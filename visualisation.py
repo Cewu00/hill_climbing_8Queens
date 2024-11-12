@@ -45,7 +45,7 @@ class ChessBoardGUI(tk.Tk):
 
 if __name__ == "__main__":
 
-    gui = ChessBoardGUI()  # ChessboardGUI is now a tk.Tk window
+    gui = ChessBoardGUI()
     gui.mainloop()
 
 
