@@ -1,13 +1,15 @@
 class ChessBoardLogic():
+    QUEEN_COLOUR = {
+    1: 'Black',
+    2: 'Green',
+    3: 'Red'
+    }
+    
     def __init__(self, size=8):
             self.size = size
             self.board = [[0 for _ in range(size)] for _ in range(size)]
             
-            self.queen_colour = {
-                1: 'Black',
-                2: 'Green',
-                3: 'Red'
-            }
+
 
     def print_chessboard(self):
         print("Current state of the chessboard:")
