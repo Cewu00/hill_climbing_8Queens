@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 
 class ChessBoardGUI(tk.Tk):
     SUPPORTED_QUEEN_COLOURS = ['Black', 'Green', 'Red']
-    SQUARE_COLOURS = ['#f3dec5', '#3b2824']
+    SQUARE_COLOURS = ['#F3DEC5', '#3B2824']
     
     def __init__(self, square = 120, board_size = 8):
         super().__init__()
@@ -36,20 +36,24 @@ class ChessBoardGUI(tk.Tk):
 
     def draw_board(self):
         self.main_canvas.delete('board')
-        for row in range(0, self.board_size):
-            for col in range(0, self.board_size):
-                if (row+col)%2==0:
+        for col in range(0, self.board_size):
+            for row in range(0, self.board_size):
+                if (col+row)%2==0:
                     square_colour = self.SQUARE_COLOURS[0]
+                    text_colour = self.SQUARE_COLOURS[1]
                 else:
                     square_colour = self.SQUARE_COLOURS[1]
-                x0 = row * self.square
-                y0 = col * self.square
+                    text_colour = self.SQUARE_COLOURS[0]
+                    
+                x0 = col * self.square
+                y0 = row * self.square
                 x1 = x0 + self.square
                 y1 = y0 + self.square
                 self.main_canvas.create_rectangle(x0, y0, x1, y1, fill=square_colour, tags='board')
+                self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 12), fill=text_colour, anchor="nw", tags="board num")
     
     def draw_queen(self, x:int, y:int, colour:str = 'Black') -> bool:
-        # all(isinstance(i, int) for i in lista) - provjerava jel sve sto je u listu int
+        
         if isinstance(x, int) and isinstance(y, int):
             if (0 <= x and x < self.board_size) and (0 <= y and y < self.board_size):
                 if colour in self.SUPPORTED_QUEEN_COLOURS:
@@ -78,41 +82,27 @@ class ChessBoardGUI(tk.Tk):
         
     def draw_queen_path(self, x, y):
         self.main_canvas.delete('path')
-        sq_x = x*self.square
+        sq_x = x*self.square 
         sq_y = y*self.square
         
-        for i in range(1, self.board_size):
-            # if i%2==0:
-            #     colour = self.SQUARE_COLOURS[0]
-            # else:
-            #     colour = self.SQUARE_COLOURS[1]
-            
-            
-            
-            if self.queen_positions.get((x, y)) == None:
-                colour = 'green'
+        for i in range(self.board_size):
+            if (y + i) % 2 == 0:
+                colour = '#B6E694' # white
             else:
-                colour = 'red'
+                colour = '#2B631A' # black
+            if i != x:
+                self.main_canvas.create_rectangle(i*self.square, sq_y, (i+1)*self.square, sq_y+self.square, fill=colour, tags='path')
             
-            i = i * self.square
-            if sq_x - i >=0:
-                self.main_canvas.create_rectangle(sq_x-i, sq_y, sq_x-i +self.square, sq_y+self.square, fill=colour, tags='path') # - =
-                if sq_y + i <= self.board_px_height:
-                    self.main_canvas.create_rectangle(sq_x-i, sq_y+i, sq_x-i+self.square, sq_y+i+self.square, fill=colour, tags='path') # - +
-                if sq_y - i >= 0:
-                    self.main_canvas.create_rectangle(sq_x-i, sq_y-i, sq_x-i +self.square, sq_y-i +self.square, fill=colour, tags='path') # - -
-            if sq_x + i <= self.board_px_width:
-                self.main_canvas.create_rectangle(sq_x+i, sq_y, sq_x+i+self.square, sq_y+self.square, fill=colour, tags='path') # + =
-                if sq_y + i <= self.board_px_height:
-                    self.main_canvas.create_rectangle(sq_x+i, sq_y+i, sq_x+i +self.square, sq_y+i +self.square, fill=colour, tags='path') # + +
-                if sq_y - i >= 0:
-                    self.main_canvas.create_rectangle(sq_x+i, sq_y-i, sq_x+i+self.square, sq_y-i+self.square, fill=colour, tags='path') # + -    
-            if sq_y - i >= 0:
-                self.main_canvas.create_rectangle(sq_x, sq_y-i, sq_x+self.square, sq_y-i+self.square, fill=colour, tags='path') # = -
-            if sq_y + i <= self.board_px_height:
-                self.main_canvas.create_rectangle(sq_x, sq_y+i, sq_x+self.square, sq_y+i+self.square, fill=colour, tags='path') # = +
-        # osmislicu kasnije neki matematicki-ji nacin da ovo nacrtam
-        
+        for i in range(self.board_size):
+            if (x + i) % 2 == 0:
+                colour = '#B6E694' # white
+            else:
+                colour = '#2B631A' # black
+            if i != y:
+                self.main_canvas.create_rectangle(sq_x, i*self.square, sq_x+self.square, (i+1)*self.square, fill=colour, tags='path')
+            
+        #for i in range(self.board_size):
+            
         
     def test_path_logic(self, x , y, q_list = []):
         if x == self.board_size:
@@ -126,7 +116,7 @@ class ChessBoardGUI(tk.Tk):
             if state:
                 q_list.append((x, y))
             self.draw_queen_path(x, y)
-            self.after(500, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
+            self.after(1000, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
 
 
     
@@ -135,9 +125,11 @@ if __name__ == "__main__":
     gui = ChessBoardGUI()
 
     
-    gui.after(100, lambda: gui.draw_queen(0, 6))
+    #gui.after(100, lambda: gui.draw_queen(0, 6))
 
-    #gui.test_path_logic(0, 0)
+
+    
+    gui.test_path_logic(0, 0)
 
    
     gui.mainloop()
