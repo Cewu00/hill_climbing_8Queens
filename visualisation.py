@@ -48,16 +48,17 @@ class ChessBoardGUI(tk.Tk):
                 y1 = y0 + self.square
                 self.main_canvas.create_rectangle(x0, y0, x1, y1, fill=square_colour, tags='board')
     
-    def draw_queen(self, x:int, y:int, colour:str = 'Black') -> int:
+    def draw_queen(self, x:int, y:int, colour:str = 'Black') -> bool:
         # all(isinstance(i, int) for i in lista) - provjerava jel sve sto je u listu int
         if isinstance(x, int) and isinstance(y, int):
             if (0 <= x and x < self.board_size) and (0 <= y and y < self.board_size):
                 if colour in self.SUPPORTED_QUEEN_COLOURS:
-                    if self.queen_positions.get(x) == None:
-                        queen_img = self.main_canvas.create_image(x*self.square, y*self.square, image = self.queen_images[colour], anchor='nw', tags=f"queen {x}{y}")
-                        self.queen_positions[x] = (y, queen_img) # {column : row, object} - ovako je najbolje jer ce tabela imati samo jednu kraljicu po koloni
-                        # univerzalinije bi bilo nesto tipa {(x, y): colour} nije dobro bas ali trt sad... muka mi je mjenjat sve XD                    
-                        return queen_img
+                    if self.queen_positions.get((x, y)) == None:
+                        img_id = self.main_canvas.create_image(x*self.square, y*self.square, image = self.queen_images[colour], anchor='nw', tags=f"queen")
+                        self.queen_positions[(x, y)] = img_id # {column, row : Queen ID} - ovako je najbolje      
+                        return True
+                    else:
+                        return False
                 else:
                     raise Exception(f"Colour is not supported: {colour}")
             else:
@@ -66,53 +67,67 @@ class ChessBoardGUI(tk.Tk):
             raise Exception(f"x and y have to be intigers, currently they are: {isinstance(x)}, {isinstance(y)}")
     
     def remove_all_queens(self):
-        self.queen_positions = {}
+        self.queen_positions.clear()
         self.main_canvas.delete('queen')
         self.main_canvas.delete('path')
     
-    def remove_queen(self, x):
-        queen_img = self.queen_positions[x][1]
+    def remove_queen(self, x, y):
+        queen_img = self.queen_positions[x, y]
+        self.queen_positions.pop(x, y)
         self.main_canvas.delete(queen_img)
         
-    def draw_queen_path(self, x):
+    def draw_queen_path(self, x, y):
         self.main_canvas.delete('path')
-        
-        y = self.queen_positions[x][0] # x, y
         sq_x = x*self.square
         sq_y = y*self.square
         
         for i in range(1, self.board_size):
+            # if i%2==0:
+            #     colour = self.SQUARE_COLOURS[0]
+            # else:
+            #     colour = self.SQUARE_COLOURS[1]
+            
+            
+            
+            if self.queen_positions.get((x, y)) == None:
+                colour = 'green'
+            else:
+                colour = 'red'
+            
             i = i * self.square
             if sq_x - i >=0:
-                self.main_canvas.create_rectangle(sq_x-i, sq_y, sq_x-i +self.square, sq_y+self.square, fill='green', tags='path') # - =
+                self.main_canvas.create_rectangle(sq_x-i, sq_y, sq_x-i +self.square, sq_y+self.square, fill=colour, tags='path') # - =
                 if sq_y + i <= self.board_px_height:
-                    self.main_canvas.create_rectangle(sq_x-i, sq_y+i, sq_x-i+self.square, sq_y+i+self.square, fill='green', tags='path') # - +
+                    self.main_canvas.create_rectangle(sq_x-i, sq_y+i, sq_x-i+self.square, sq_y+i+self.square, fill=colour, tags='path') # - +
                 if sq_y - i >= 0:
-                    self.main_canvas.create_rectangle(sq_x-i, sq_y-i, sq_x-i +self.square, sq_y-i +self.square, fill='green', tags='path') # - -
-            if sq_x + i <= self.board_px_width: # and sq_y + i <= self.board_px_height:
-                self.main_canvas.create_rectangle(sq_x+i, sq_y, sq_x+i+self.square, sq_y+self.square, fill='green', tags='path') # + =
+                    self.main_canvas.create_rectangle(sq_x-i, sq_y-i, sq_x-i +self.square, sq_y-i +self.square, fill=colour, tags='path') # - -
+            if sq_x + i <= self.board_px_width:
+                self.main_canvas.create_rectangle(sq_x+i, sq_y, sq_x+i+self.square, sq_y+self.square, fill=colour, tags='path') # + =
                 if sq_y + i <= self.board_px_height:
-                    self.main_canvas.create_rectangle(sq_x+i, sq_y+i, sq_x+i +self.square, sq_y+i +self.square, fill='green', tags='path') # + +
+                    self.main_canvas.create_rectangle(sq_x+i, sq_y+i, sq_x+i +self.square, sq_y+i +self.square, fill=colour, tags='path') # + +
                 if sq_y - i >= 0:
-                    self.main_canvas.create_rectangle(sq_x+i, sq_y-i, sq_x+i+self.square, sq_y-i+self.square, fill='green', tags='path') # + -    
+                    self.main_canvas.create_rectangle(sq_x+i, sq_y-i, sq_x+i+self.square, sq_y-i+self.square, fill=colour, tags='path') # + -    
             if sq_y - i >= 0:
-                self.main_canvas.create_rectangle(sq_x, sq_y-i, sq_x+self.square, sq_y-i+self.square, fill='green', tags='path') # = -
+                self.main_canvas.create_rectangle(sq_x, sq_y-i, sq_x+self.square, sq_y-i+self.square, fill=colour, tags='path') # = -
             if sq_y + i <= self.board_px_height:
-                self.main_canvas.create_rectangle(sq_x, sq_y+i, sq_x+self.square, sq_y+i+self.square, fill='green', tags='path') # = +
+                self.main_canvas.create_rectangle(sq_x, sq_y+i, sq_x+self.square, sq_y+i+self.square, fill=colour, tags='path') # = +
         # osmislicu kasnije neki matematicki-ji nacin da ovo nacrtam
         
         
-def test_path_logic(x , y):
-    if x == gui.board_size:
-        if y == gui.board_size-1:
-            return
-        gui.remove_all_queens()
-        gui.after(0, lambda x=0, y=y+1: test_path_logic(x, y))
-    else:
-        gui.draw_queen(x, y)
-        id = gui.draw_queen_path(x)
-        gui.after(500, lambda x=x+1, y=y: test_path_logic(x, y))
-    
+    def test_path_logic(self, x , y, q_list = []):
+        if x == self.board_size:
+            if y == self.board_size-1:
+                return
+            for i, j in q_list:
+                self.remove_queen(i, j)
+            self.after(0, lambda x=0, y=y+1, q_list=[]: self.test_path_logic(x, y, q_list))
+        else:
+            state = self.draw_queen(x, y)
+            if state:
+                q_list.append((x, y))
+            self.draw_queen_path(x, y)
+            self.after(500, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
+
 
     
 if __name__ == "__main__":
@@ -120,9 +135,9 @@ if __name__ == "__main__":
     gui = ChessBoardGUI()
 
     
-    gui.after(500, lambda: gui.draw_queen(7, 7))
+    gui.after(100, lambda: gui.draw_queen(0, 6))
 
-    test_path_logic(0, 0)
+    #gui.test_path_logic(0, 0)
 
    
     gui.mainloop()
