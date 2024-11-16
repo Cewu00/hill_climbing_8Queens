@@ -130,6 +130,9 @@ class ChessBoardGUI(tk.Tk):
                     self.main_canvas.create_rectangle(sq_x, sq_y, sq_x+self.square, sq_y+self.square, fill='red', tags='path diagonal')
                 else:
                     self.main_canvas.create_rectangle(sq_x, sq_y, sq_x+self.square, sq_y+self.square, fill=colour, tags='path diagonal')
+                    
+        self.main_canvas.tag_raise('queen')
+
         
     def test_path_logic(self, x , y, q_list = []):
         if x == self.board_size:
@@ -143,7 +146,7 @@ class ChessBoardGUI(tk.Tk):
             if state:
                 q_list.append((x, y))
             self.draw_queen_path(x, y)
-            self.after(100, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
+            self.after(1000, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
 
 
     
