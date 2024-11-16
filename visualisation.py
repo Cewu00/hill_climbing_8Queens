@@ -4,7 +4,8 @@ from PIL import Image, ImageTk
 
 class ChessBoardGUI(tk.Tk):
     SUPPORTED_QUEEN_COLOURS = ['Black', 'Green', 'Red']
-    SQUARE_COLOURS = ['#F3DEC5', '#3B2824']
+    SQUARE_COLOURS = ['#F3DEC5', '#3B2824'] #WHITE, #BLACK
+    GREEN_SQUARE_COLOURS = ['#B6E694', '#2B631A'] #WHITE, #BLACK
     
     def __init__(self, square = 120, board_size = 8):
         super().__init__()
@@ -85,9 +86,9 @@ class ChessBoardGUI(tk.Tk):
         sq_y = y*self.square 
         for i in range(self.board_size): # horizontala
             if (y + i) % 2 == 0:
-                colour = '#B6E694' # white
+                colour = self.GREEN_SQUARE_COLOURS[0] # white
             else:
-                colour = '#2B631A' # black
+                colour = self.GREEN_SQUARE_COLOURS[1] # black
             if i != x:
                 if self.queen_positions.get((i, y)) != None:
                     self.main_canvas.create_rectangle(i*self.square, sq_y, (i+1)*self.square, sq_y+self.square, fill='red', tags='path horisontal')
@@ -97,9 +98,9 @@ class ChessBoardGUI(tk.Tk):
         sq_x = x*self.square
         for i in range(self.board_size): # vertikala
             if (x + i) % 2 == 0:
-                colour = '#B6E694' # white
+                colour = self.GREEN_SQUARE_COLOURS[0] # white
             else:
-                colour = '#2B631A' # black
+                colour = self.GREEN_SQUARE_COLOURS[1] # black
             if i != y:
                 if self.queen_positions.get((x, i)) != None:
                     self.main_canvas.create_rectangle(sq_x, i*self.square, sq_x+self.square, (i+1)*self.square, fill='red', tags='path vertical')
@@ -107,9 +108,9 @@ class ChessBoardGUI(tk.Tk):
                     self.main_canvas.create_rectangle(sq_x, i*self.square, sq_x+self.square, (i+1)*self.square, fill=colour, tags='path vertical')
                 
         if (x + y) % 2 == 0:
-            colour = '#B6E694' # white
+            colour = self.GREEN_SQUARE_COLOURS[0] # white
         else:
-            colour = '#2B631A' # black
+            colour = self.GREEN_SQUARE_COLOURS[1] # black
         
         # broj kvadrata koji ce biti od kraljice do kraja table 
         nw_diag = min(y, x)
