@@ -5,7 +5,8 @@ from PIL import Image, ImageTk
 class ChessBoardGUI(tk.Tk):
     SUPPORTED_QUEEN_COLOURS = ['Black', 'Green', 'Red']
     SQUARE_COLOURS = ['#F3DEC5', '#3B2824'] #WHITE, #BLACK
-    GREEN_SQUARE_COLOURS = ['#B6E694', '#2B631A'] #WHITE, #BLACK
+    #GREEN_SQUARE_COLOURS = ['#B6E694', '#2B631A'] #WHITE, #BLACK
+    GREEN_SQUARE_COLOURS = ['#AEE78C', '#334820'] #WHITE, #BLACK
     
     def __init__(self, square = 120, board_size = 8):
         super().__init__()
@@ -51,7 +52,7 @@ class ChessBoardGUI(tk.Tk):
                 x1 = x0 + self.square
                 y1 = y0 + self.square
                 self.main_canvas.create_rectangle(x0, y0, x1, y1, fill=square_colour, tags='board')
-                self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 12), fill=text_colour, anchor="nw", tags="board num")
+                self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 10), fill=text_colour, anchor="nw", tags="board num")
     
     def draw_queen(self, x:int, y:int, colour:str = 'Black') -> bool:
         if isinstance(x, int) and isinstance(y, int):
@@ -133,6 +134,7 @@ class ChessBoardGUI(tk.Tk):
                     self.main_canvas.create_rectangle(sq_x, sq_y, sq_x+self.square, sq_y+self.square, fill=colour, tags='path diagonal')
                     
         self.main_canvas.tag_raise('queen')
+        self.main_canvas.tag_raise('num')
 
         
     def test_path_logic(self, x , y, q_list = []):
@@ -161,8 +163,6 @@ if __name__ == "__main__":
 
     
     gui.test_path_logic(0, 0)
-    
-
     
     
     gui.mainloop()
