@@ -156,14 +156,11 @@ class ChessBoardGUI(tk.Tk):
 if __name__ == "__main__":
 
     gui = ChessBoardGUI()
-
     
     gui.after(100, lambda: gui.draw_queen(0, 6))
     gui.after(100, lambda: gui.draw_queen(3, 6))
 
-    
     gui.test_path_logic(0, 0)
-    
     
     gui.mainloop()
 
