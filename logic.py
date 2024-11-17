@@ -1,20 +1,6 @@
 from random import randint
 
 class ChessBoardLogic():
-    QUEEN_COLOUR = {
-    1: 'Black',
-    2: 'Green',
-    3: 'Red'
-    }
-    
-    # nekako sam uspio da ucinim ove matrice potpuno neintuitivnim... 
-    # doduse takve su ja mislim... jer ne mozes o matrici da mislis kao o kordinatnom sistemu
-    # uglavnom fora je da u matrici[y][x] zapravo prvo pristupas vertikali a tek onda horizontali... [[0,1,2], [0,1,2], [0,1,2]] 
-    # a kad covjek o tome razimslja uvjek prvo ide x jel da XD... dok mi nesto to nije uslo u glavu sve sam odje dumao zasto su mi stvari ne konzistentne lol
-    
-    # sad sam provalio zasto sam se zbunio... jer kad imas for loop... 
-    # ides vazda matrica[i][j] a nesto mi nije ulazilo u glavu da je to tako jer se prvo j vrti pa tek onda i... nebitno XD
-    
     def __init__(self, board_size=8): 
         self.board_size = board_size
         self.board = [[0 for _ in range(board_size)] for _ in range(board_size)]
@@ -23,6 +9,7 @@ class ChessBoardLogic():
         self.queen_positions = {} # (x : y)
         
         self.random_board()
+        self.board_colisions_calculator()
         self.board_heuristics_calculator()
         
     def print_chessboard(self):
@@ -97,47 +84,98 @@ class ChessBoardLogic():
         for i in range(self.board_size):
             for j in range(self.board_size):
                 self.collisions[i][j] = self.square_collisions_calculator(j, i) # x, y
+                
     
-    def board_heuristics_calculator(self): # TODO: ispravi ovo.
-        # TODO: POGRESNO! heuristika mora da bude ukupni broj kolizija za trenutno stanje na cijeloj tabeli a ne samo za kvadrat
-        # imam pozicije kraljica... sad mozemo da za svaku kocku samo saberemo sve pozicije osim
-        
-        heur = 0
+    def board_heuristics_calculator(self):
+        original_colisions = [] # pocetno stanje kraljica
         for x in range(self.board_size):
             y = self.queen_positions[x]
-            heur += self.collisions[y][x]
-        print(heur)
+            # print(x, y)
+            original_colisions.append(self.collisions[y][x])
+        heur = sum(original_colisions)
+        # print(original_colisions, heur)
         
         for i in range(self.board_size):
             for j in range(self.board_size):
-                pass
+                if self.queen_positions[i] == j:
+                    self.heuristics[j][i] = (heur + (self.collisions[j][i] - original_colisions[i])*2)//2
+                else:
+                    self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
     
-    def min_heuristics_calc(self): # ovo ako radi kako treba ne bi trebalo da pravi problem nakon sto popravim racunanje heuristike
+    
+    def get_min_heuristics(self): # ovo ako radi kako treba ne bi trebalo da pravi problem nakon sto popravim racunanje heuristike
         minimums = []
+        overall_minimum = self.heuristics[0][0]
         for i in range(self.board_size):
             num1 = self.heuristics[0][i]
-            minimum_col = []
+            minimum_col = [(0, num1)]
+            if overall_minimum > num1:
+                overall_minimum = num1  
             for j in range(self.board_size - 1): # TODO: FIX! ne appenduje (7, num) ili (0, num) provjeri... mislim da je ovo drugo
                 num2 = self.heuristics[j+1][i]
-                if num1 > num2:
+                if num2 < num1:
                     minimum_col = []
                     minimum_col.append((j+1, num2)) # y, heuristics_value (x nam ne treba jer ce to biti redom izlistano u listi 'minimums' koja se pravi)
                     num1 = num2
                 elif num1 == num2:
                     minimum_col.append((j+1, num2)) # y, heuristics_value
-                    
+                if overall_minimum > num2:
+                    overall_minimum = num2
             minimums.append(minimum_col)
-        for row in minimums:
-            print(row)       
+
+        minimum_count = 0
+        for i in range(len(minimums)):
+            if minimums[i][0][1] > overall_minimum:
+                minimums[i] = 0
+            else:
+                minimum_count += len(minimums[i])
+        random_choice = randint(1, minimum_count)
+
+        num = 1
+        for i in range(len(minimums)):
+            if minimums[i] != 0:
+                for tp in minimums[i]:
+                    if num == random_choice:
+                        return (i, tp[0], tp[1]) # x, y, heuristic_value (returning a random heuristic value of all the lowest ones)
+                    num += 1
+        
     
-    def run_algorithm(self):
+    def hill_climbing(self):
         pass
+    
+    def set_custom_board_state(self, queen_positions : dict):
+        if len(queen_positions) != self.board_size:
+            raise Exception(f"Dictionary lenght expected to be {self.board_size} instead of {len(queen_positions)}")
+        if min(queen_positions.values()) < 0 or max(queen_positions.values()) > self.board_size - 1: 
+            raise Exception(f"Dictionary Y values must be between 0 and {self.board_size - 1} instead of {min(queen_positions.values())} and {max(queen_positions.values())}")
+        
+        self.queen_positions = queen_positions
+        
+        self.board = []
+        for i in range(self.board_size):
+            row = []
+            for j in range(self.board_size):
+                if self.queen_positions[j] == i:
+                    row.append(1)
+                else:
+                    row.append(0)
+            self.board.append(row)
+    
                     
 if __name__ == "__main__":
 
     chess_board = ChessBoardLogic()
+    
+    pred5_board = {0:4, 1:5, 2:6, 3:3, 4:4, 5:5, 6:6, 7:5}
+    chess_board.set_custom_board_state(pred5_board)
     chess_board.print_chessboard()
+    
+    chess_board.board_colisions_calculator()
+    chess_board.print_collisions()
+    
+    chess_board.board_heuristics_calculator()
     chess_board.print_heruistics()
-    chess_board.min_heuristics_calc()
+    
+    print(chess_board.get_min_heuristics())
 
     
