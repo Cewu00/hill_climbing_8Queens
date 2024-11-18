@@ -1,4 +1,5 @@
 from random import randint
+from time import time
 
 class ChessBoardLogic():
     def __init__(self, board_size=8): 
@@ -7,10 +8,11 @@ class ChessBoardLogic():
         self.collisions = [[0 for _ in range(board_size)] for _ in range(board_size)]
         self.heuristics = [[0 for _ in range(board_size)] for _ in range(board_size)]
         self.queen_positions = {} # (x : y)
+        self.current_heuristics = -1
         
-        self.random_board()
-        self.board_colisions_calculator()
-        self.board_heuristics_calculator()
+        # self.random_board()
+        # self.board_colisions_calculator()
+        # self.board_heuristics_calculator()
         
     def print_chessboard(self):
         print("Current state of the chessboard:")
@@ -95,10 +97,15 @@ class ChessBoardLogic():
         heur = sum(original_colisions)
         # print(original_colisions, heur)
         
+        self.current_heuristics = heur//2
         for i in range(self.board_size):
             for j in range(self.board_size):
                 if self.queen_positions[i] == j:
-                    self.heuristics[j][i] = (heur + (self.collisions[j][i] - original_colisions[i])*2)//2
+                    self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
+                    if self.current_heuristics != self.heuristics[j][i]: # za svaki slucaj... koliko ovdje ima setanja po ovim matricama ne bi me cudilo da sam nesto zabrljao
+                        raise Exception("Something's wrong I can feel it!")
+                    else:
+                        self.current_heuristics = self.heuristics[j][i]
                 else:
                     self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
     
@@ -129,7 +136,7 @@ class ChessBoardLogic():
                 minimums[i] = 0
             else:
                 minimum_count += len(minimums[i])
-        random_choice = randint(1, minimum_count)
+        random_choice = randint(1, minimum_count) # TODO: pitaj profa: da li ovo sto se vraca vazda treba da bude prvi???
 
         num = 1
         for i in range(len(minimums)):
@@ -139,10 +146,30 @@ class ChessBoardLogic():
                         return (i, tp[0], tp[1]) # x, y, heuristic_value (returning a random heuristic value of all the lowest ones)
                     num += 1
         
-    
-    def hill_climbing(self):
-        pass
-    
+    def move_queen(self, queen_x, new_y):
+        queen_y = self.queen_positions.pop(queen_x)
+        self.board[queen_y][queen_x] = 0
+        self.board[new_y][queen_x] = 1
+        self.queen_positions[queen_x] = new_y
+
+    def hill_climbing(self, steps):
+        num = 0
+        for i in range(steps):
+            queen_x, new_y, value = self.get_min_heuristics()
+            if value == 0:
+                self.move_queen(queen_x, new_y)
+                num += 1
+                #print(f"Moves needed: {num}")
+                return num
+            else:
+                self.move_queen(queen_x, new_y)
+                num += 1
+                self.board_colisions_calculator()
+                self.board_heuristics_calculator()
+                  
+        #print("Fail... womp womp")
+        return num
+        
     def set_custom_board_state(self, queen_positions : dict):
         if len(queen_positions) != self.board_size:
             raise Exception(f"Dictionary lenght expected to be {self.board_size} instead of {len(queen_positions)}")
@@ -162,20 +189,45 @@ class ChessBoardLogic():
             self.board.append(row)
     
                     
-if __name__ == "__main__":
-
+if __name__ == "__main__": # ovdje pisi stvari dok testiras 
+    
     chess_board = ChessBoardLogic()
     
-    pred5_board = {0:4, 1:5, 2:6, 3:3, 4:4, 5:5, 6:6, 7:5}
-    chess_board.set_custom_board_state(pred5_board)
-    chess_board.print_chessboard()
+    # pred5_board = {0:4, 1:5, 2:6, 3:3, 4:4, 5:5, 6:6, 7:5}
+    # chess_board.set_custom_board_state(pred5_board.copy())
+    # chess_board.print_chessboard()
     
-    chess_board.board_colisions_calculator()
-    chess_board.print_collisions()
+    # chess_board.board_colisions_calculator()
+    # chess_board.print_collisions()
     
-    chess_board.board_heuristics_calculator()
-    chess_board.print_heruistics()
+    # chess_board.board_heuristics_calculator()
+    # chess_board.print_heruistics()
     
-    print(chess_board.get_min_heuristics())
-
+    ttotal1 = time()
+    for i in range(1, 11):
+    
+        steps = i
+        num = []
+        t1 = time()
+        for i in range(10000):
+            chess_board.random_board()
+            chess_board.board_colisions_calculator()
+            chess_board.board_heuristics_calculator()
+            num.append(chess_board.hill_climbing(steps)) 
+        t2 = time()
+        
+        print(f"Steps Allowed: {steps}")
+        print(f"AVG number of steps: {sum(num)/len(num)}")
+        number_of_faliures = num.count(steps)
+        if len(num) - number_of_faliures != 0:
+            print(f"AVG number of steps (excluding faliures): {(sum(num)-number_of_faliures*steps)/(len(num) - number_of_faliures)}")
+        else:
+            print(f"AVG number of steps (excluding faliures): ∞")
+        print(f"Fail Rate: {number_of_faliures/len(num)* 100:.2f}%")
+        print(f"Success Rate: {(1 - num.count(steps)/len(num))* 100:.2f}%")
+        print(f"Time Taken: {t2 - t1:.2f}s")
+        print(f"Time Taken for One Loop: {(t2 - t1)/10000 * 10**3:.2f}ms")
+        print("\n\n")
+        
+    print(f"Time Taken: {time() - ttotal1:.2f}s")
     
