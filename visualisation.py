@@ -69,9 +69,6 @@ class ChessBoardGUI(tk.Tk):
         else:
             return False
 
-                
-            
-    
     def remove_all_queens(self):
         self.queen_positions.clear()
         self.main_canvas.delete('queen')
@@ -150,7 +147,7 @@ class ChessBoardGUI(tk.Tk):
             if state:
                 q_list.append((x, y))
             self.draw_queen_path(x, y)
-            self.after(1000, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
+            self.after(500, lambda x=x+1, y=y: self.test_path_logic(x, y, q_list))
 
 
     

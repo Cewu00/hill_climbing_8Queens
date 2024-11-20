@@ -243,7 +243,7 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     success_rate = 0
     fail_rate = 0
     t1 = time()
-    for i in range(1000):
+    for i in range(200):
         chess_board.random_board()
         chess_board.board_colisions_calculator()
         chess_board.board_heuristics_calculator()
@@ -260,12 +260,12 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     t2 = time()
 
 
-    #print(steps_taken_list, success_rate, fail_rate)
+    print(len(steps_taken_list))
     print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
     print(f"Success Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
     
-    print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list)}")
-    print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate)}")
+    print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
+    print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate):.2f}")
 
 
     print(f"Time Taken: {t2 - t1:.2f}s")
