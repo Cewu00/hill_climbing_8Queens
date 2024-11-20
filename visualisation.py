@@ -55,21 +55,22 @@ class ChessBoardGUI(tk.Tk):
                 self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 10), fill=text_colour, anchor="nw", tags="board num")
     
     def draw_queen(self, x:int, y:int, colour:str = 'Black') -> bool:
-        if isinstance(x, int) and isinstance(y, int):
-            if (0 <= x and x < self.board_size) and (0 <= y and y < self.board_size):
-                if colour in self.SUPPORTED_QUEEN_COLOURS:
-                    if self.queen_positions.get((x, y)) == None:
-                        img_id = self.main_canvas.create_image(x*self.square, y*self.square, image = self.queen_images[colour], anchor='nw', tags=f"queen")
-                        self.queen_positions[(x, y)] = img_id # {column, row : Queen ID} - ovako je najbolje      
-                        return True
-                    else:
-                        return False
-                else:
-                    raise Exception(f"Colour is not supported: {colour}")
-            else:
-                raise Exception(f"x:{x} and y:{y} have to be between 0 and {self.board_size - 1}")
-        else:
+        if not (isinstance(x, int) and isinstance(y, int)):
             raise Exception(f"x and y have to be intigers, currently they are: {isinstance(x)}, {isinstance(y)}")
+        if not ((0 <= x and x < self.board_size) and (0 <= y and y < self.board_size)):
+            raise Exception(f"x:{x} and y:{y} have to be between 0 and {self.board_size - 1}")
+        if colour not in self.SUPPORTED_QUEEN_COLOURS:
+            raise Exception(f"Colour is not supported: {colour}")
+        
+        if self.queen_positions.get((x, y)) == None:
+            img_id = self.main_canvas.create_image(x*self.square, y*self.square, image = self.queen_images[colour], anchor='nw', tags=f"queen")
+            self.queen_positions[(x, y)] = img_id # {column, row : Queen ID} - ovako je najbolje      
+            return True
+        else:
+            return False
+
+                
+            
     
     def remove_all_queens(self):
         self.queen_positions.clear()
