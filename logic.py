@@ -8,7 +8,7 @@ class ChessBoardLogic():
         self.collisions = [[0 for _ in range(board_size)] for _ in range(board_size)]
         self.heuristics = [[0 for _ in range(board_size)] for _ in range(board_size)]
         self.queen_positions = {} # (x : y)
-        self.current_heuristics = -1
+        self.current_heuristics = 0
         
         # self.random_board()
         # self.board_colisions_calculator()
@@ -104,8 +104,6 @@ class ChessBoardLogic():
                     self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
                     if self.current_heuristics != self.heuristics[j][i]: # za svaki slucaj... koliko ovdje ima setanja po ovim matricama ne bi me cudilo da sam nesto zabrljao
                         raise Exception("Something's wrong I can feel it!")
-                    else:
-                        self.current_heuristics = self.heuristics[j][i]
                 else:
                     self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
     
@@ -152,23 +150,60 @@ class ChessBoardLogic():
         self.board[new_y][queen_x] = 1
         self.queen_positions[queen_x] = new_y
 
-    def hill_climbing(self, steps):
+    def hill_climbing(self):
         num = 0
-        for i in range(steps):
+        random_move_counter = 0
+        queen_x, new_y, value = self.get_min_heuristics()
+        while True:
             queen_x, new_y, value = self.get_min_heuristics()
             if value == 0:
                 self.move_queen(queen_x, new_y)
                 num += 1
-                #print(f"Moves needed: {num}")
-                return num
+                #print(value, self.current_heuristics)
+                return num, True
             else:
                 self.move_queen(queen_x, new_y)
                 num += 1
+                #print(value, self.current_heuristics)
                 self.board_colisions_calculator()
                 self.board_heuristics_calculator()
+            
+            if value >= self.current_heuristics:
+                self.move_queen(randint(0, self.board_size-1), randint(0, self.board_size-1))
+                random_move_counter += 1
+                if random_move_counter == 100:
+                    break
+                
+        return num, False
+    
+    def hill_climbing_premmited_equalities(self, number_of_equalities:int = 100):
+        #ovo samo doupsta da se krecemo po nasumicnim jednakim vrijednostima do 100 puta... 
+        #nije rijesenje za 100 sporednih poteza
+        num = 0
+        equality_num = 0
+        queen_x, new_y, value = self.get_min_heuristics()
+        while value <= self.current_heuristics:
+            queen_x, new_y, value = self.get_min_heuristics()
+            if value == 0:
+                self.move_queen(queen_x, new_y)
+                num += 1
+                #print(value, self.current_heuristics)
+                return num, True
+            else:
+                self.move_queen(queen_x, new_y)
+                num += 1
+                #print(value, self.current_heuristics)
+                self.board_colisions_calculator()
+                self.board_heuristics_calculator()
+            
+            if value == self.current_heuristics: # ovo bi trabalo da samo ako 
+                equality_num += 1
+                if equality_num == number_of_equalities:
+                    break
+            else:
+                equality_num = 0
                   
-        #print("Fail... womp womp")
-        return num
+        return num, False
         
     def set_custom_board_state(self, queen_positions : dict):
         if len(queen_positions) != self.board_size:
@@ -202,32 +237,40 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     
     # chess_board.board_heuristics_calculator()
     # chess_board.print_heruistics()
-    
-    ttotal1 = time()
-    for i in range(1, 11):
-    
-        steps = i
-        num = []
-        t1 = time()
-        for i in range(10000):
-            chess_board.random_board()
-            chess_board.board_colisions_calculator()
-            chess_board.board_heuristics_calculator()
-            num.append(chess_board.hill_climbing(steps)) 
-        t2 = time()
-        
-        print(f"Steps Allowed: {steps}")
-        print(f"AVG number of steps: {sum(num)/len(num)}")
-        number_of_faliures = num.count(steps)
-        if len(num) - number_of_faliures != 0:
-            print(f"AVG number of steps (excluding faliures): {(sum(num)-number_of_faliures*steps)/(len(num) - number_of_faliures)}")
+
+    steps_taken_list = []
+    steps_taken_failed_list = []
+    success_rate = 0
+    fail_rate = 0
+    t1 = time()
+    for i in range(1000):
+        chess_board.random_board()
+        chess_board.board_colisions_calculator()
+        chess_board.board_heuristics_calculator()
+        steps_taken, state = chess_board.hill_climbing()
+        if state:
+            success_rate += 1
         else:
-            print(f"AVG number of steps (excluding faliures): ∞")
-        print(f"Fail Rate: {number_of_faliures/len(num)* 100:.2f}%")
-        print(f"Success Rate: {(1 - num.count(steps)/len(num))* 100:.2f}%")
-        print(f"Time Taken: {t2 - t1:.2f}s")
-        print(f"Time Taken for One Loop: {(t2 - t1)/10000 * 10**3:.2f}ms")
-        print("\n\n")
+            fail_rate += 1
+            steps_taken_failed_list.append(steps_taken)
+        steps_taken_list.append(steps_taken)
         
-    print(f"Time Taken: {time() - ttotal1:.2f}s")
+        print(f"{i} > {steps_taken}, {success_rate}, {fail_rate}")
+        
+    t2 = time()
+
+
+    #print(steps_taken_list, success_rate, fail_rate)
+    print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    print(f"Success Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    
+    print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list)}")
+    print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate)}")
+
+
+    print(f"Time Taken: {t2 - t1:.2f}s")
+    print(f"Time Taken for One Loop: {(t2 - t1)/1000 * 10**3:.2f}ms")
+
+        
+
     
