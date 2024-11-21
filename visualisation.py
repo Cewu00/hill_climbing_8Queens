@@ -1,6 +1,6 @@
 import tkinter as tk
 from time import sleep
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk # prepoznaje alpha channel na slikama - enables transparency 
 
 class ChessBoardGUI(tk.Tk):
     SUPPORTED_QUEEN_COLOURS = ['Black', 'Green', 'Red']
@@ -68,7 +68,32 @@ class ChessBoardGUI(tk.Tk):
             return True
         else:
             return False
+    
+    def move_queen(self, x:int, y:int, x_new:int, y_new:int):
+        if x_new > self.board_size or y_new > self.board_size:
+            raise Exception("Coordinates ({x_new}, {y_new}) out of bounds")
+        print(self.queen_positions)
+        id = self.queen_positions.pop((x, y))
+        self.queen_positions[(x_new, y_new)] = id
+        
+        x1_px = x * self.square
+        y1_px = y * self.square
+        x2_px = x_new * self.square
+        y2_px = y_new * self.square
+        
+        steps = 50
+        dx = (x2_px - x1_px) / steps
+        dy = (y2_px - y1_px) / steps
 
+        def animate_movement(step): # TODO: bila bi fora kad bi imali easing funckiju wink wink :P
+            if step < steps:
+                self.main_canvas.move(id, dx, dy)
+                self.after(10, animate_movement, step + 1)
+                
+        animate_movement(0)
+            
+        
+        
     def remove_all_queens(self):
         self.queen_positions.clear()
         self.main_canvas.delete('queen')
@@ -134,6 +159,11 @@ class ChessBoardGUI(tk.Tk):
         self.main_canvas.tag_raise('queen')
         self.main_canvas.tag_raise('num')
 
+    def write_numbers_small():
+        pass
+    
+    def write_numbers_large():
+        pass
         
     def test_path_logic(self, x , y, q_list = []):
         if x == self.board_size:
@@ -158,7 +188,9 @@ if __name__ == "__main__":
     gui.after(100, lambda: gui.draw_queen(0, 6))
     gui.after(100, lambda: gui.draw_queen(3, 6))
 
-    gui.test_path_logic(0, 0)
+    gui.after(1000, lambda: gui.move_queen(0, 6, 5, 6))
+
+    #gui.test_path_logic(0, 0)
     
     gui.mainloop()
 
