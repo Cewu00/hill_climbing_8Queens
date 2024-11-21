@@ -86,7 +86,8 @@ class ChessBoardLogic():
         for i in range(self.board_size):
             for j in range(self.board_size):
                 self.collisions[i][j] = self.square_collisions_calculator(j, i) # x, y
-                
+        
+        return self.collisions
     
     def board_heuristics_calculator(self):
         original_colisions = [] # pocetno stanje kraljica
@@ -106,7 +107,8 @@ class ChessBoardLogic():
                         raise Exception("Something's wrong I can feel it!")
                 else:
                     self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
-    
+
+        return self.heuristics
     
     def get_min_heuristics(self): # ovo ako radi kako treba ne bi trebalo da pravi problem nakon sto popravim racunanje heuristike
         minimums = []
@@ -266,7 +268,6 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     
     print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
     print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate):.2f}")
-
 
     print(f"Time Taken: {t2 - t1:.2f}s")
     print(f"Time Taken for One Loop: {(t2 - t1)/1000 * 10**3:.2f}ms")
