@@ -1,0 +1,4 @@
+Pozivanjem  logic.py fajla poziva se statistika.
+
+Pozivanjem main.py fajla poziva se vizuelizacija algoritma dok se ne pronadje prvo tacno rijesenje.
+(ne prikazijue nikakvu statistiku)
