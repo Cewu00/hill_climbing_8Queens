@@ -8,7 +8,7 @@ class ChessBoardGUI(tk.Tk):
     #GREEN_SQUARE_COLOURS = ['#B6E694', '#2B631A'] #WHITE, #BLACK
     GREEN_SQUARE_COLOURS = ['#AEE78C', '#334820'] #WHITE, #BLACK
     
-    def __init__(self, square = 120, board_size = 8):
+    def __init__(self, square:int = 120, board_size:int = 8):
         super().__init__()
         if square in [100, 120]:
             self.square = square #px
@@ -35,6 +35,7 @@ class ChessBoardGUI(tk.Tk):
             self.queen_images[colour] = ImageTk.PhotoImage(PIL_img)
             
         self.queen_positions = {}
+        self.after_timer = 0
 
     def draw_board(self):
         self.main_canvas.delete('board')
@@ -52,7 +53,7 @@ class ChessBoardGUI(tk.Tk):
                 x1 = x0 + self.square
                 y1 = y0 + self.square
                 self.main_canvas.create_rectangle(x0, y0, x1, y1, fill=square_colour, tags='board')
-                self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 10), fill=text_colour, anchor="nw", tags="board num")
+                self.main_canvas.create_text(x0+5, y0+5, text=f"{row}{col}", font=("Arial", 10), fill=text_colour, anchor="nw", tags="board num xy")
     
     def draw_queen(self, x:int, y:int, colour:str = 'Black') -> bool:
         if not (isinstance(x, int) and isinstance(y, int)):
@@ -64,15 +65,19 @@ class ChessBoardGUI(tk.Tk):
         
         if self.queen_positions.get((x, y)) == None:
             img_id = self.main_canvas.create_image(x*self.square, y*self.square, image = self.queen_images[colour], anchor='nw', tags=f"queen")
-            self.queen_positions[(x, y)] = img_id # {column, row : Queen ID} - ovako je najbolje      
+            self.queen_positions[(x, y)] = img_id # {column, row : Queen ID} - ovako je najbolje
+            self.main_canvas.tag_raise('num')      
             return True
         else:
+            self.main_canvas.tag_raise('num')
             return False
     
     def move_queen(self, x:int, y:int, x_new:int, y_new:int):
         if x_new > self.board_size or y_new > self.board_size:
             raise Exception("Coordinates ({x_new}, {y_new}) out of bounds")
-        print(self.queen_positions)
+
+        self.main_canvas.tag_raise('queen')
+        
         id = self.queen_positions.pop((x, y))
         self.queen_positions[(x_new, y_new)] = id
         
@@ -85,26 +90,27 @@ class ChessBoardGUI(tk.Tk):
         dx = (x2_px - x1_px) / steps
         dy = (y2_px - y1_px) / steps
 
-        def animate_movement(step): # TODO: bila bi fora kad bi imali easing funckiju wink wink :P
+        def animate_movement(step): # TODO: bila bi fora kad bi imali easing funckiju ali mislim da je pretesko to uradit a da ne moramo da napravimo sistem za pracenje vremena
             if step < steps:
                 self.main_canvas.move(id, dx, dy)
                 self.after(10, animate_movement, step + 1)
                 
         animate_movement(0)
-            
         
+        
+              
         
     def remove_all_queens(self):
         self.queen_positions.clear()
         self.main_canvas.delete('queen')
         self.main_canvas.delete('path')
     
-    def remove_queen(self, x, y):
+    def remove_queen(self, x:int, y:int):
         queen_img = self.queen_positions[x, y]
         self.queen_positions.pop((x, y))
         self.main_canvas.delete(queen_img)
         
-    def draw_queen_path(self, x, y):
+    def draw_queen_path(self, x:int, y:int):
         self.main_canvas.delete('path')
          
         sq_y = y*self.square 
@@ -159,13 +165,33 @@ class ChessBoardGUI(tk.Tk):
         self.main_canvas.tag_raise('queen')
         self.main_canvas.tag_raise('num')
 
-    def write_numbers_small():
-        pass
+    def write_numbers_small(self, numbers:list):
+        self.main_canvas.delete('small')
+        for col in range(0, self.board_size):
+            for row in range(0, self.board_size):
+                if (col+row)%2==0:
+                    text_colour = self.SQUARE_COLOURS[1]
+                else:
+                    text_colour = self.SQUARE_COLOURS[0]
+                    
+                x0 = col * self.square
+                y0 = row * self.square
+                x1 = x0 + self.square
+                y1 = y0 + self.square
+                self.main_canvas.create_text(x1-20, y1-20 , text=f"{row}{col}", font=("Arial", 10), fill=text_colour, anchor="nw", tags="num small")
     
-    def write_numbers_large():
-        pass
-        
-    def test_path_logic(self, x , y, q_list = []):
+    def write_numbers_large(self, numbers:list):
+        self.main_canvas.delete('large')
+        for col in range(0, self.board_size):
+            for row in range(0, self.board_size):
+                x0 = col * self.square
+                y0 = row * self.square
+                x1 = x0 + self.square
+                y1 = y0 + self.square
+                self.main_canvas.create_text((x0+x1)/2, (y0+y1)/2, text=f"{row}{col}", font=("Arial", 30), fill='red', tags="num large")
+        self.main_canvas.tag_raise('large')
+                
+    def test_path_logic(self, x:int , y:int, q_list:list = []):
         if x == self.board_size:
             if y == self.board_size-1:
                 return
@@ -188,8 +214,16 @@ if __name__ == "__main__":
     gui.after(100, lambda: gui.draw_queen(0, 6))
     gui.after(100, lambda: gui.draw_queen(3, 6))
 
-    gui.after(1000, lambda: gui.move_queen(0, 6, 5, 6))
+    gui.after(150, lambda: gui.move_queen(0, 6, 5, 6))
+    gui.after(1000, lambda: gui.move_queen(5, 6, 2, 2))
 
+    gui.after(1200, lambda: gui.draw_queen(0, 0))
+    gui.after(2200, lambda: gui.move_queen(0, 0, 7, 7))
+    gui.after(3200, lambda: gui.move_queen(7, 7, 0, 7))
+
+    gui.write_numbers_large([])
+    gui.write_numbers_small([])
+    
     #gui.test_path_logic(0, 0)
     
     gui.mainloop()
