@@ -10,9 +10,7 @@ class ChessBoardLogic():
         self.queen_positions = {} # (x : y)
         self.current_heuristics = 0
         
-        # self.random_board()
-        # self.board_colisions_calculator()
-        # self.board_heuristics_calculator()
+        self.random_board()
         
     def print_chessboard(self):
         print("Current state of the chessboard:")
@@ -170,42 +168,45 @@ class ChessBoardLogic():
                 self.board_colisions_calculator()
                 self.board_heuristics_calculator()
             
-            if value >= self.current_heuristics:
+            if value == self.current_heuristics:
                 self.move_queen(randint(0, self.board_size-1), randint(0, self.board_size-1))
                 random_move_counter += 1
                 if random_move_counter == 100:
                     break
+            
+            elif value > self.current_heuristics:
+                break
                 
         return num, False
     
-    def hill_climbing_premmited_equalities(self, number_of_equalities:int = 100):
-        #ovo samo doupsta da se krecemo po nasumicnim jednakim vrijednostima do 100 puta... 
-        #nije rijesenje za 100 sporednih poteza
-        num = 0
-        equality_num = 0
-        queen_x, new_y, value = self.get_min_heuristics()
-        while value <= self.current_heuristics:
-            queen_x, new_y, value = self.get_min_heuristics()
-            if value == 0:
-                self.move_queen(queen_x, new_y)
-                num += 1
-                #print(value, self.current_heuristics)
-                return num, True
-            else:
-                self.move_queen(queen_x, new_y)
-                num += 1
-                #print(value, self.current_heuristics)
-                self.board_colisions_calculator()
-                self.board_heuristics_calculator()
+    # def hill_climbing_premmited_equalities(self, number_of_equalities:int = 100):
+    #     #ovo samo doupsta da se krecemo po nasumicnim jednakim vrijednostima do 100 puta... 
+    #     #nije rijesenje za 100 sporednih poteza
+    #     num = 0
+    #     equality_num = 0
+    #     queen_x, new_y, value = self.get_min_heuristics()
+    #     while value <= self.current_heuristics:
+    #         queen_x, new_y, value = self.get_min_heuristics()
+    #         if value == 0:
+    #             self.move_queen(queen_x, new_y)
+    #             num += 1
+    #             #print(value, self.current_heuristics)
+    #             return num, True
+    #         else:
+    #             self.move_queen(queen_x, new_y)
+    #             num += 1
+    #             #print(value, self.current_heuristics)
+    #             self.board_colisions_calculator()
+    #             self.board_heuristics_calculator()
             
-            if value == self.current_heuristics: # ovo bi trabalo da samo ako 
-                equality_num += 1
-                if equality_num == number_of_equalities:
-                    break
-            else:
-                equality_num = 0
+    #         if value == self.current_heuristics: # ovo bi trabalo da samo ako 
+    #             equality_num += 1
+    #             if equality_num == number_of_equalities:
+    #                 break
+    #         else:
+    #             equality_num = 0
                   
-        return num, False
+    #     return num, False
         
     def set_custom_board_state(self, queen_positions : dict):
         if len(queen_positions) != self.board_size:
@@ -230,6 +231,7 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     
     chess_board = ChessBoardLogic()
     
+    # Tabla iz knjige
     # pred5_board = {0:4, 1:5, 2:6, 3:3, 4:4, 5:5, 6:6, 7:5}
     # chess_board.set_custom_board_state(pred5_board.copy())
     # chess_board.print_chessboard()
@@ -245,7 +247,7 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     success_rate = 0
     fail_rate = 0
     t1 = time()
-    for i in range(200):
+    for i in range(1000):
         chess_board.random_board()
         chess_board.board_colisions_calculator()
         chess_board.board_heuristics_calculator()
