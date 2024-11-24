@@ -134,7 +134,7 @@ class ChessBoardLogic():
                 minimums[i] = 0
             else:
                 minimum_count += len(minimums[i])
-        random_choice = randint(1, minimum_count) # TODO: pitaj profa: da li ovo sto se vraca vazda treba da bude prvi???
+        random_choice = randint(1, minimum_count)
 
         num = 1
         for i in range(len(minimums)):
@@ -150,7 +150,7 @@ class ChessBoardLogic():
         self.board[new_y][queen_x] = 1
         self.queen_positions[queen_x] = new_y
 
-    def hill_climbing(self):
+    def hill_climbing(self): # TODO Racunanje prosjeka za sidestep/random_move_counter
         num = 0
         random_move_counter = 0
         queen_x, new_y, value = self.get_min_heuristics()
@@ -171,6 +171,7 @@ class ChessBoardLogic():
             if value == self.current_heuristics:
                 self.move_queen(randint(0, self.board_size-1), randint(0, self.board_size-1))
                 random_move_counter += 1
+                num += 1
                 if random_move_counter == 100:
                     break
             
@@ -265,11 +266,12 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
 
 
     print(len(steps_taken_list))
-    print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
     print(f"Success Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
     
     print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
     print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate):.2f}")
+    print(f"AVG number of sidesteps:")
 
     print(f"Time Taken: {t2 - t1:.2f}s")
     print(f"Time Taken for One Loop: {(t2 - t1)/1000 * 10**3:.2f}ms")
