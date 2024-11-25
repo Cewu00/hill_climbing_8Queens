@@ -109,6 +109,7 @@ class ChessBoardGUI(tk.Tk):
         queen_img = self.queen_IDs[x, y]
         self.queen_IDs.pop((x, y))
         self.main_canvas.delete(queen_img)
+        self.main_canvas.delete('path')
         
     def draw_queen_path(self, x:int, y:int):
         self.main_canvas.delete('path')

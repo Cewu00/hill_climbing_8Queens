@@ -85,8 +85,8 @@ class ChessBoardLogic():
                     num += 1
         return num
     
-    def board_colisions_calculator(self):
-        for i in range(self.board_size):
+    def board_colisions_calculator(self): # znam da racunanje kolizije ne mora da se poziva za cijelu tablu i da je dovoljno samo da uradimo -1 na stare putanje
+        for i in range(self.board_size):  # i +1 na nove putanje pomjerene kraljice... ali necu da unosim mogucu dodatnu nebulozu... ovako je jednostavno
             for j in range(self.board_size):
                 self.collisions[i][j] = self.square_collisions_calculator(j, i) # x, y
         
@@ -105,11 +105,11 @@ class ChessBoardLogic():
         for i in range(self.board_size):
             for j in range(self.board_size):
                 if self.queen_positions[i] == j:
-                    self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
+                    self.heuristics[j][i] = heur//2 - original_colisions[i] + self.collisions[j][i]
                     if self.current_heuristics != self.heuristics[j][i]: # za svaki slucaj... koliko ovdje ima setanja po ovim matricama ne bi me cudilo da sam nesto zabrljao
                         raise Exception("Something's wrong I can feel it!")
                 else:
-                    self.heuristics[j][i] = (heur - 2 * original_colisions[i] + 2 * self.collisions[j][i])//2
+                    self.heuristics[j][i] = heur//2 - original_colisions[i] + self.collisions[j][i]
 
         return self.heuristics
     
@@ -143,13 +143,10 @@ class ChessBoardLogic():
         self.queen_positions[queen_x] = new_y
 
     def hill_climbing(self):
-        # bojim se da nesto ovdje nisam shvatio kako treba... jer nikako ne mogu da sceram broj poteza na 21 kako stoji u knjizi... 
-        # ispravio sam par stvari i sad je sve otislo do djavola i nzm u cemu je problem :/
+        # bojim se da nesto ovdje nisam shvatio kako treba... jer nikako ne mogu da spustim broj poteza na 21 kako stoji u knjizi... 
+        # ispravio sam par stvari (koje su bile pogresne) i sad vise ni success_rate nije kako treba...
         step_counter = 0
         random_move_counter = 0
-        self.print_chessboard()
-        self.print_collisions()
-        self.print_heruistics()
         while True:
             queen_x, new_y, value = self.get_min_heuristics()
             #print(queen_x, new_y, value)
@@ -159,7 +156,9 @@ class ChessBoardLogic():
                 #print(value, self.current_heuristics)
                 return step_counter, random_move_counter, True
             
-            elif value == self.current_heuristics:
+            elif value == self.current_heuristics: 
+                # gledao sam vizuelizaciju koja implementira algoritam na isti nacin... algoritam, voli da se zaglavi i da, nakon sto iskoci sa nasumicnim brojem,
+                # se vrati u prethodno polje. Jer ce u 80% slucajeva to biti minimum.
                 x = randint(0, self.board_size-1)
                 y = randint(0, self.board_size-1)
                 while y == self.queen_positions[x]: # ima smisla da nasumicni pomjeraj mora biti pomjeraj... a ne isto stanje
@@ -217,7 +216,7 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     # chess_board.board_heuristics_calculator()
     # chess_board.print_heruistics()
 
-    iter_number = 1
+    iter_number = 1000
     
     steps_taken_list = []
     steps_taken_failed_list = []
@@ -251,19 +250,19 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
         print(f"{i} > {steps_taken}, {success_rate}, {fail_rate}, {random_count}")  
     t2 = time()
 
-    # print(f"\nSuccess Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
-    # print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    print(f"\nSuccess Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
     
-    # print(f"\nAVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
-    # print(f"AVG number of steps (success): {sum(steps_taken_success_list) / len(steps_taken_success_list):.2f}")
-    # print(f"AVG number of steps (failure): {sum(steps_taken_failed_list) / len(steps_taken_failed_list):.2f}")
+    print(f"\nAVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
+    print(f"AVG number of steps (success): {sum(steps_taken_success_list) / len(steps_taken_success_list):.2f}")
+    print(f"AVG number of steps (failure): {sum(steps_taken_failed_list) / len(steps_taken_failed_list):.2f}")
     
-    # print(f"\nAVG number of sidesteps: {sum(random_count_list) / len(random_count_list):.2f}")
-    # print(f"AVG number of sidesteps (success): {sum(random_count_success_list) / len(random_count_success_list):.2f}")
-    # print(f"AVG number of sidesteps (failure): {sum(random_count_failed_list) / len(random_count_failed_list):.2f}")
+    print(f"\nAVG number of sidesteps: {sum(random_count_list) / len(random_count_list):.2f}")
+    print(f"AVG number of sidesteps (success): {sum(random_count_success_list) / len(random_count_success_list):.2f}")
+    print(f"AVG number of sidesteps (failure): {sum(random_count_failed_list) / len(random_count_failed_list):.2f}")
     
-    # print(f"\nTime Taken: {t2 - t1:.2f}s")
-    # print(f"Avg Time Taken for One Loop: {(t2 - t1)/iter_number * 10**3:.2f}ms")
+    print(f"\nTime Taken: {t2 - t1:.2f}s")
+    print(f"Avg Time Taken for One Loop: {(t2 - t1)/iter_number * 10**3:.2f}ms")
     
     # fig, axes = plt.subplots(3, 2, figsize=(16, 8))  # 8x8 inches for good window size
 
