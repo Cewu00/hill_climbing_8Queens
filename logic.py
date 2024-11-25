@@ -265,27 +265,27 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     print(f"\nTime Taken: {t2 - t1:.2f}s")
     print(f"Avg Time Taken for One Loop: {(t2 - t1)/iter_number * 10**3:.2f}ms")
     
-    # fig, axes = plt.subplots(3, 2, figsize=(16, 8))  # 8x8 inches for good window size
+    fig, axes = plt.subplots(3, 2, figsize=(16, 8))  # 8x8 inches for good window size
 
-    # all_lists = [[steps_taken_list, steps_taken_success_list, steps_taken_failed_list], [random_count_list, random_count_success_list, random_count_failed_list]]
-    # all_titles = [['Steps Taken (Total)', 'Steps Taken (Success)', 'Steps Taken (Fail)'], ['Side-steps Taken (Total)', 'Side-steps Taken (Success)', 'Side-steps Taken (Fail)']]
-    # for i in range(len(all_lists)):
-    #     for j in range(len(all_lists[i])):
-    #         axes[j, i].hist(all_lists[i][j], bins=range(min(all_lists[i][j]), max(all_lists[i][j]) + 2), edgecolor='black')
-    #         axes[j, i].set_title(all_titles[i][j])
-    #         axes[j, i].set_xlabel('Number')
-    #         axes[j, i].set_ylabel('Frequency')
+    all_lists = [[steps_taken_list, steps_taken_success_list, steps_taken_failed_list], [random_count_list, random_count_success_list, random_count_failed_list]]
+    all_titles = [['Steps Taken (Total)', 'Steps Taken (Success)', 'Steps Taken (Fail)'], ['Side-steps Taken (Total)', 'Side-steps Taken (Success)', 'Side-steps Taken (Fail)']]
+    for i in range(len(all_lists)):
+        for j in range(len(all_lists[i])):
+            axes[j, i].hist(all_lists[i][j], bins=range(min(all_lists[i][j]), max(all_lists[i][j]) + 2), edgecolor='black')
+            axes[j, i].set_title(all_titles[i][j])
+            axes[j, i].set_xlabel('Number')
+            axes[j, i].set_ylabel('Frequency')
             
-    # y_lims = [ax.get_ylim() for ax_row in axes for ax in ax_row]
-    # global_y_min = min(y[0] for y in y_lims)
-    # global_y_max = max(y[1] for y in y_lims)
+    y_lims = [ax.get_ylim() for ax_row in axes for ax in ax_row]
+    global_y_min = min(y[0] for y in y_lims)
+    global_y_max = max(y[1] for y in y_lims)
 
-    # for ax_row in axes:
-    #     for ax in ax_row:
-    #         ax.set_ylim(global_y_min, global_y_max)
+    for ax_row in axes:
+        for ax in ax_row:
+            ax.set_ylim(global_y_min, global_y_max)
         
-    # plt.tight_layout()
-    # plt.show()
+    plt.tight_layout()
+    plt.show()
     
     
     
