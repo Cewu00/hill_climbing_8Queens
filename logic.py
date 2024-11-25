@@ -1,5 +1,8 @@
-from random import randint
+from random import randint, choice
 from time import time
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 class ChessBoardLogic():
     def __init__(self, board_size=8): 
@@ -9,6 +12,7 @@ class ChessBoardLogic():
         self.heuristics = [[0 for _ in range(board_size)] for _ in range(board_size)]
         self.queen_positions = {} # (x : y)
         self.current_heuristics = 0
+        self.possible_minimums = []
         
         self.random_board()
         
@@ -76,7 +80,7 @@ class ChessBoardLogic():
             for i in range(1, diagonal + 1): # ne provjerava sebe jer pocinje od 1
                 x0 = (x + i*movment[0])
                 y0 = (y + i*movment[1])
-                if self.board[y0][x0] == 1: # mozda promjeni ovo u samo dodavanje broja koji je na diagonali... moguce neko marginalno ubrzanje
+                if self.board[y0][x0] == 1:
                     num += 1
         return num
     
@@ -93,7 +97,7 @@ class ChessBoardLogic():
             y = self.queen_positions[x]
             # print(x, y)
             original_colisions.append(self.collisions[y][x])
-        heur = sum(original_colisions)
+        heur = sum(original_colisions) # heuristika za pocetno stanje
         # print(original_colisions, heur)
         
         self.current_heuristics = heur//2
@@ -108,106 +112,68 @@ class ChessBoardLogic():
 
         return self.heuristics
     
-    def get_min_heuristics(self): # ovo ako radi kako treba ne bi trebalo da pravi problem nakon sto popravim racunanje heuristike
-        minimums = []
-        overall_minimum = self.heuristics[0][0]
-        for i in range(self.board_size):
-            num1 = self.heuristics[0][i]
-            minimum_col = [(0, num1)]
-            if overall_minimum > num1:
-                overall_minimum = num1  
-            for j in range(self.board_size - 1): # TODO: FIX! ne appenduje (7, num) ili (0, num) provjeri... mislim da je ovo drugo
-                num2 = self.heuristics[j+1][i]
-                if num2 < num1:
-                    minimum_col = []
-                    minimum_col.append((j+1, num2)) # y, heuristics_value (x nam ne treba jer ce to biti redom izlistano u listi 'minimums' koja se pravi)
-                    num1 = num2
-                elif num1 == num2:
-                    minimum_col.append((j+1, num2)) # y, heuristics_value
-                if overall_minimum > num2:
-                    overall_minimum = num2
-            minimums.append(minimum_col)
+    def get_min_heuristics(self):
+        matrix = np.array(self.heuristics)
+        rows, cols = matrix.shape
 
-        minimum_count = 0
-        for i in range(len(minimums)):
-            if minimums[i][0][1] > overall_minimum:
-                minimums[i] = 0
-            else:
-                minimum_count += len(minimums[i])
-        random_choice = randint(1, minimum_count)
+        min_coords = []
+        min_value = float('inf')
+        for x in range(rows):
+            for y in range(cols):
+                if x in self.queen_positions and self.queen_positions[x] == y:
+                    continue
+                
+                if matrix[x, y] < min_value:
+                    min_value = matrix[x, y]
+                    min_coords = [(x, y)]  # reset sa ovom kordinatom
+                elif matrix[x, y] == min_value:
+                    min_coords.append((x, y))
 
-        num = 1
-        for i in range(len(minimums)):
-            if minimums[i] != 0:
-                for tp in minimums[i]:
-                    if num == random_choice:
-                        return (i, tp[0], tp[1]) # x, y, heuristic_value (returning a random heuristic value of all the lowest ones)
-                    num += 1
-        
+        # ako imamo vise kordinata istih minimalnih vrijednosti biramo nasumicnu
+        selected_coord = choice(min_coords)
+        return selected_coord[1], selected_coord[0], min_value
+    
     def move_queen(self, queen_x, new_y):
         queen_y = self.queen_positions.pop(queen_x)
         self.board[queen_y][queen_x] = 0
         self.board[new_y][queen_x] = 1
         self.queen_positions[queen_x] = new_y
 
-    def hill_climbing(self): # TODO Racunanje prosjeka za sidestep/random_move_counter
-        num = 0
+    def hill_climbing(self):
+        step_counter = 0
         random_move_counter = 0
-        queen_x, new_y, value = self.get_min_heuristics()
         while True:
             queen_x, new_y, value = self.get_min_heuristics()
+            #print(queen_x, new_y, value)
             if value == 0:
                 self.move_queen(queen_x, new_y)
-                num += 1
+                step_counter += 1
                 #print(value, self.current_heuristics)
-                return num, True
-            else:
-                self.move_queen(queen_x, new_y)
-                num += 1
-                #print(value, self.current_heuristics)
-                self.board_colisions_calculator()
-                self.board_heuristics_calculator()
+                return step_counter, random_move_counter, True
             
-            if value == self.current_heuristics:
-                self.move_queen(randint(0, self.board_size-1), randint(0, self.board_size-1))
+            elif value == self.current_heuristics:
+                x = randint(0, self.board_size-1)
+                y = randint(0, self.board_size-1)
+                while y == self.queen_positions[x]:
+                    x = randint(0, self.board_size-1)
+                    y = randint(0, self.board_size-1)
+                self.move_queen(x, y)
                 random_move_counter += 1
-                num += 1
+                step_counter += 1 # bas nisam siguran da li ovo treba da se broji
                 if random_move_counter == 100:
                     break
-            
+                self.board_colisions_calculator()
+                self.board_heuristics_calculator()
             elif value > self.current_heuristics:
                 break
-                
-        return num, False
-    
-    # def hill_climbing_premmited_equalities(self, number_of_equalities:int = 100):
-    #     #ovo samo doupsta da se krecemo po nasumicnim jednakim vrijednostima do 100 puta... 
-    #     #nije rijesenje za 100 sporednih poteza
-    #     num = 0
-    #     equality_num = 0
-    #     queen_x, new_y, value = self.get_min_heuristics()
-    #     while value <= self.current_heuristics:
-    #         queen_x, new_y, value = self.get_min_heuristics()
-    #         if value == 0:
-    #             self.move_queen(queen_x, new_y)
-    #             num += 1
-    #             #print(value, self.current_heuristics)
-    #             return num, True
-    #         else:
-    #             self.move_queen(queen_x, new_y)
-    #             num += 1
-    #             #print(value, self.current_heuristics)
-    #             self.board_colisions_calculator()
-    #             self.board_heuristics_calculator()
-            
-    #         if value == self.current_heuristics: # ovo bi trabalo da samo ako 
-    #             equality_num += 1
-    #             if equality_num == number_of_equalities:
-    #                 break
-    #         else:
-    #             equality_num = 0
-                  
-    #     return num, False
+            else:
+                self.move_queen(queen_x, new_y)
+                step_counter += 1
+                self.board_colisions_calculator()
+                self.board_heuristics_calculator()
+
+     
+        return step_counter, random_move_counter, False
         
     def set_custom_board_state(self, queen_positions : dict):
         if len(queen_positions) != self.board_size:
@@ -243,39 +209,75 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     # chess_board.board_heuristics_calculator()
     # chess_board.print_heruistics()
 
+    iter_number = 1000
+    
     steps_taken_list = []
     steps_taken_failed_list = []
+    steps_taken_success_list = []
+    
+    random_count_list = []
+    random_count_failed_list = []
+    random_count_success_list = []
+
     success_rate = 0
     fail_rate = 0
+    
     t1 = time()
-    for i in range(1000):
+    for i in range(1, iter_number+1):
         chess_board.random_board()
         chess_board.board_colisions_calculator()
         chess_board.board_heuristics_calculator()
-        steps_taken, state = chess_board.hill_climbing()
+        steps_taken, random_count, state = chess_board.hill_climbing()
         if state:
             success_rate += 1
+            steps_taken_success_list.append(steps_taken)
+            random_count_success_list.append(random_count)
         else:
             fail_rate += 1
             steps_taken_failed_list.append(steps_taken)
+            random_count_failed_list.append(random_count)
+            
         steps_taken_list.append(steps_taken)
+        random_count_list.append(random_count)
         
-        print(f"{i} > {steps_taken}, {success_rate}, {fail_rate}")
-        
+        print(f"{i} > {steps_taken}, {success_rate}, {fail_rate}, {random_count}")  
     t2 = time()
 
-
-    print(len(steps_taken_list))
-    print(f"Success Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
+    print(f"\nSuccess Rate: {(success_rate/(success_rate+fail_rate)) * 100:.2f}%")
     print(f"Fail Rate: {(fail_rate/(success_rate+fail_rate)) * 100:.2f}%")
     
-    print(f"AVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
-    print(f"AVG number of steps (excluding faliures): {(sum(steps_taken_list) - sum(steps_taken_failed_list))/(len(steps_taken_list) - fail_rate):.2f}")
-    print(f"AVG number of sidesteps:")
+    print(f"\nAVG number of steps: {sum(steps_taken_list)/len(steps_taken_list):.2f}")
+    print(f"AVG number of steps (success): {sum(steps_taken_success_list) / len(steps_taken_success_list):.2f}")
+    print(f"AVG number of steps (failure): {sum(steps_taken_failed_list) / len(steps_taken_failed_list):.2f}")
+    
+    print(f"\nAVG number of sidesteps: {sum(random_count_list) / len(random_count_list):.2f}")
+    print(f"AVG number of sidesteps (success): {sum(random_count_success_list) / len(random_count_success_list):.2f}")
+    print(f"AVG number of sidesteps (failure): {sum(random_count_failed_list) / len(random_count_failed_list):.2f}")
+    
+    print(f"\nTime Taken: {t2 - t1:.2f}s")
+    print(f"Avg Time Taken for One Loop: {(t2 - t1)/iter_number * 10**3:.2f}ms")
+    
+    fig, axes = plt.subplots(3, 2, figsize=(16, 8))  # 8x8 inches for good window size
 
-    print(f"Time Taken: {t2 - t1:.2f}s")
-    print(f"Time Taken for One Loop: {(t2 - t1)/1000 * 10**3:.2f}ms")
+    all_lists = [[steps_taken_list, steps_taken_success_list, steps_taken_failed_list], [random_count_list, random_count_success_list, random_count_failed_list]]
+    all_titles = [['Steps Taken (Total)', 'Steps Taken (Success)', 'Steps Taken (Fail)'], ['Side-steps Taken (Total)', 'Side-steps Taken (Success)', 'Side-steps Taken (Fail)']]
+    for i in range(len(all_lists)):
+        for j in range(len(all_lists[i])):
+            axes[j, i].hist(all_lists[i][j], bins=range(min(all_lists[i][j]), max(all_lists[i][j]) + 2), edgecolor='black')
+            axes[j, i].set_title(all_titles[i][j])
+            axes[j, i].set_xlabel('Number')
+            axes[j, i].set_ylabel('Frequency')
+            
+    y_lims = [ax.get_ylim() for ax_row in axes for ax in ax_row]
+    global_y_min = min(y[0] for y in y_lims)
+    global_y_max = max(y[1] for y in y_lims)
 
+    for ax_row in axes:
+        for ax in ax_row:
+            ax.set_ylim(global_y_min, global_y_max)
         
-
+    plt.tight_layout()
+    plt.show()
+    
+    
     
