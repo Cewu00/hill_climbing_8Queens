@@ -42,33 +42,31 @@ def set_board(callback, gui:ChessBoardGUI, queen_positions:dict):
 def change_queens_colour(callback, gui:ChessBoardGUI, colour:str):
     gui.main_canvas.itemconfig('queen', image=gui.queen_images[colour])
 
-# def show_random(callback, gui:ChessBoardGUI, x:int, y:int):
-#     after_time = 0
+def show_random(callback, gui:ChessBoardGUI, x:int, y:int):
+    after_time = 0
     
-#     for i in range(0, gui.board_size):
-#         for j in range(0, gui.board_size):
-#             after_time += 25
-#             gui.draw_circle(j, i)
-            
-#     random_moves = []
-#     for i in range(0, gui.board_size**2//3):
-#         xr = randint(0, gui.board_size-1)
-#         yr = randint(0, gui.board_size-1)
-#         while xr == x and yr == y:
-#             xr = randint(0, gui.board_size-1)
-#             yr = randint(0, gui.board_size-1)
-            
-#         random_moves.append((xr, yr))
+    # for i in range(gui.board_size):
+    #     for j in range(gui.board_size):
+    #         if gui.queen_IDs.get(j, i) == None:
+    #             gui.after(after_time, lambda : gui.draw_circle(j, i))
+    # for _ in range(3):
+    #     gui.after(after_time, lambda tag='circle', colour='blue' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
+    #     after_time += 200 
+    #     gui.after(after_time, lambda tag='circle', colour='purple', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
+    #     after_time += 200
         
-#     for coord in random_moves:
-#         for j in range(3):
-#             gui.after(after_time, lambda tag='circle', colour='green' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
-#             after_time += 200 
-#             gui.after(after_time, lambda tag='circle', colour='blue', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
-#             after_time += 200
-#         break    
+    # gui.after(after_time, lambda: gui.main_canvas.delete('circle'))
     
-#     callback()
+    gui.after(after_time, lambda : gui.draw_circle(x, y))
+    for _ in range(3):
+        gui.after(after_time, lambda tag='circle', colour='blue' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
+        after_time += 200 
+        gui.after(after_time, lambda tag='circle', colour='purple', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
+        after_time += 200
+        
+    gui.after(after_time, lambda: gui.main_canvas.delete('circle'))
+    
+    callback()
             
 
 def move_queen(callback, gui:ChessBoardGUI, x:int, new_y:int, y):
@@ -88,12 +86,12 @@ def show_all_collisions(callback, gui:ChessBoardGUI, collisions:list, queen_posi
         y_queen = queen_positions[x]
         
         gui.after(after_time, lambda x=x_queen, y=y_queen: gui.remove_queen(x, y))
-        after_time += 250
+        after_time += 300
         for y in range(len(collisions)):
             gui.after(after_time, lambda x=x, y=y, colour='Green': gui.draw_queen(x, y, colour))
             gui.after(after_time, lambda x=x, y=y: gui.draw_queen_path(x, y))
             gui.after(after_time, lambda x=x, y=y, number=collisions[y][x]: gui.write_number_large(x, y, number))
-            after_time += 100 # brzina, sto manje to je brze
+            after_time += 150 # brzina, sto manje to je brze (ovo i heuristika jedu najvise vremena)
             gui.after(after_time, lambda x=x, y=y: gui.remove_queen(x, y))
             gui.after(after_time, lambda x=x, y=y: gui.large_to_small(x, y))
 
@@ -114,12 +112,12 @@ def show_all_herusitics(callback, gui:ChessBoardGUI, heuristics:list, queen_posi
         y_queen = queen_positions[x]
 
         gui.after(after_time, lambda x=x_queen, y=y_queen: gui.remove_queen(x, y))
-        after_time += 300
+        after_time += 250
 
         for y in range(len(heuristics)):
             gui.after(after_time, lambda x=x, y=y, colour='Green': gui.draw_queen(x, y, colour))
             gui.after(after_time, lambda x=x, y=y, number=heuristics[y][x]: gui.write_number_large(x, y, number))
-            after_time += 100 # brzina, sto manje to je brze
+            after_time += 50 # brzina, sto manje to je brze
             gui.after(after_time, lambda x=x, y=y: gui.remove_queen(x, y))
 
         gui.after(after_time, lambda x=x_queen, y=y_queen: gui.draw_queen(x, y))
@@ -141,13 +139,13 @@ def show_minimums(callback, gui:ChessBoardGUI, x_min, y_min, coord_minimums):
     for i in range(repeats):
         for yc, xc in coord_minimums:
             gui.after(after_time, lambda x=xc, y=yc : gui.draw_circle(x, y))
-            after_time += 300 # brzina, sto manje to je brze
+            after_time += 300 # brzina, sto manje to je brze (ovo ne bih dirao jer je puno ljepse kad se ne desi u milisekundi)
             if i == repeats-1 and xc == x_min and yc == y_min:
                 for j in range(3):
                     gui.after(after_time, lambda tag='circle', colour='green' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
-                    after_time += 200 
+                    after_time += 200 # takodje
                     gui.after(after_time, lambda tag='circle', colour='purple', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
-                    after_time += 200
+                    after_time += 200 # takodje
                 break     
             gui.after(after_time, lambda : gui.main_canvas.delete('circle'))
                     
@@ -188,7 +186,7 @@ def hill_climbing_steps(gui:ChessBoardGUI, logic:ChessBoardLogic):
             y_old = logic.queen_positions[xr]
             print(xr, yr, y_old)
             logic.move_queen(xr, yr)
-            #scheduler.add_task(show_random, 1000, gui, xr, yr) # TODO: FINISH VISUALISATION FOR RANDOM MOVE
+            scheduler.add_task(show_random, 1000, gui, xr, yr)
             scheduler.add_task(move_queen, 1000, gui, xr, yr, y_old)
             
             collisions = deepcopy(logic.board_colisions_calculator())
@@ -215,9 +213,6 @@ def hill_climbing_steps(gui:ChessBoardGUI, logic:ChessBoardLogic):
             scheduler.add_task(show_all_herusitics, 1000, gui, heuristics, queen_positions)
         elif minimum > previous_heuristics:
             return False
-        
-
-        
         
 
 if __name__ == "__main__":
