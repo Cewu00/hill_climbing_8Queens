@@ -94,11 +94,10 @@ class ChessBoardGUI(tk.Tk):
         dx = (x2_px - x1_px) / steps
         dy = (y2_px - y1_px) / steps
 
-        def animate_movement(step): # TODO: bila bi fora kad bi imali easing funckiju ali mislim da je pretesko to uradit a da ne moramo da napravimo sistem za pracenje vremena
+        def animate_movement(step):
             if step < steps:
                 self.main_canvas.move(id, dx, dy)
                 self.after(10, animate_movement, step + 1)
-                
         animate_movement(0)
                
     def remove_all_queens(self):
@@ -206,7 +205,6 @@ class ChessBoardGUI(tk.Tk):
         y1 = y0 + self.square
         id = self.main_canvas.create_text((x0+x1)/2, (y0+y1)/2, text=f"{number}", font=("Arial", self.FONT_SIZE_LARGE), fill='red', tags="num large")
         self.large_numbers_positions[(x, y)] = id
-        print(self.large_numbers_positions)
         self.main_canvas.tag_raise('large')
              
     def write_number_small(self, x:int, y:int, number:int):
@@ -252,7 +250,14 @@ class ChessBoardGUI(tk.Tk):
                 return
             
         animate_shift(self.FONT_SIZE_LARGE)
-        
+
+    def draw_circle(self, x:int, y:int):
+        x0 = x * self.square
+        y0 = y * self.square
+        x1 = x0 + self.square
+        y1 = y0 + self.square
+        circle = self.main_canvas.create_oval(x0+20, y0+20, x1-20, y1-20, fill="", outline="black", width=6, tags='circle')
+
     def test_path_logic(self, x:int , y:int, q_list:list = []):
         if x == self.board_size:
             if y == self.board_size-1:
@@ -283,10 +288,10 @@ if __name__ == "__main__":
     # gui.after(2200, lambda: gui.move_queen(0, 0, 7, 7))
     # gui.after(3200, lambda: gui.move_queen(7, 7, 0, 7))
 
-    gui.after(500, lambda: gui.write_numbers_large([]))
-    gui.after(1000, lambda: gui.large_to_small(5, 5))
+    # gui.after(500, lambda: gui.write_numbers_large([]))
+    # gui.after(1000, lambda: gui.large_to_small(5, 5))
     
-    gui.write_numbers_small([])
+    #gui.write_numbers_small([])
     #gui.test_path_logic(0, 0)
     
     #gui.write_number_large(4, 7, 47)
