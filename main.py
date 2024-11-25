@@ -42,34 +42,33 @@ def set_board(callback, gui:ChessBoardGUI, queen_positions:dict):
 def change_queens_colour(callback, gui:ChessBoardGUI, colour:str):
     gui.main_canvas.itemconfig('queen', image=gui.queen_images[colour])
 
-def show_random(callback, gui:ChessBoardGUI, x:int, y:int):
-    after_time = 0
+# def show_random(callback, gui:ChessBoardGUI, x:int, y:int):
+#     after_time = 0
     
-    for i in range(0, gui.board_size):
-        for j in range(0, gui.board_size):
-            after_time += 25
-            gui.draw_circle(j, i)
+#     for i in range(0, gui.board_size):
+#         for j in range(0, gui.board_size):
+#             after_time += 25
+#             gui.draw_circle(j, i)
             
-    random_moves = []
-    for i in range(0, gui.board_size**2//3):
-        xr = randint(0, gui.board_size-1)
-        yr = randint(0, gui.board_size-1)
-        while xr == x and yr == y:
-            xr = randint(0, gui.board_size-1)
-            yr = randint(0, gui.board_size-1)
+#     random_moves = []
+#     for i in range(0, gui.board_size**2//3):
+#         xr = randint(0, gui.board_size-1)
+#         yr = randint(0, gui.board_size-1)
+#         while xr == x and yr == y:
+#             xr = randint(0, gui.board_size-1)
+#             yr = randint(0, gui.board_size-1)
             
-        random_moves.append((xr, yr))
+#         random_moves.append((xr, yr))
         
-    for coord in random_moves:
-        gui.
-        for j in range(3):
-            gui.after(after_time, lambda tag='circle', colour='green' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
-            after_time += 200 
-            gui.after(after_time, lambda tag='circle', colour='blue', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
-            after_time += 200
-        break    
+#     for coord in random_moves:
+#         for j in range(3):
+#             gui.after(after_time, lambda tag='circle', colour='green' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=colour))
+#             after_time += 200 
+#             gui.after(after_time, lambda tag='circle', colour='blue', fill='' : gui.main_canvas.itemconfig(tagOrId=tag, outline=colour, fill=fill))
+#             after_time += 200
+#         break    
     
-    callback()
+#     callback()
             
 
 def move_queen(callback, gui:ChessBoardGUI, x:int, new_y:int, y):
