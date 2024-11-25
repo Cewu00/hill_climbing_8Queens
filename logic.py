@@ -158,7 +158,8 @@ class ChessBoardLogic():
             
             elif value == self.current_heuristics: 
                 # gledao sam vizuelizaciju koja implementira algoritam na isti nacin... algoritam, voli da se zaglavi i da, nakon sto iskoci sa nasumicnim brojem,
-                # se vrati u prethodno polje. Jer ce u 80% slucajeva to biti minimum.
+                # se vrati u prethodno polje... ali nisam siguran koji bi bio najbolji nacin da to rijesim... 
+                # razmisljao sam mozda samo da radim nasumicne poteze dok se minimum ne pomjeri... ali ne znam
                 x = randint(0, self.board_size-1)
                 y = randint(0, self.board_size-1)
                 while y == self.queen_positions[x]: # ima smisla da nasumicni pomjeraj mora biti pomjeraj... a ne isto stanje
@@ -173,7 +174,7 @@ class ChessBoardLogic():
                 self.board_heuristics_calculator()
             elif value > self.current_heuristics: 
                 break
-            else:
+            elif value < self.current_heuristics:
                 self.move_queen(queen_x, new_y)
                 step_counter += 1
                 self.board_colisions_calculator()
@@ -216,7 +217,7 @@ if __name__ == "__main__": # ovdje pisi stvari dok testiras
     # chess_board.board_heuristics_calculator()
     # chess_board.print_heruistics()
 
-    iter_number = 1000
+    iter_number = 200
     
     steps_taken_list = []
     steps_taken_failed_list = []
