@@ -154,8 +154,8 @@ def show_minimums(callback, gui:ChessBoardGUI, x_min, y_min, coord_minimums):
 def hill_climbing_steps(gui:ChessBoardGUI, logic:ChessBoardLogic):
     random_num = 0
     
-    collisions = deepcopy(logic.board_colisions_calculator())
-    heuristics = deepcopy(logic.board_heuristics_calculator())
+    collisions = logic.board_colisions_calculator()
+    heuristics = logic.board_heuristics_calculator()
     queen_positions = deepcopy(logic.queen_positions)
     previous_heuristics = logic.current_heuristics
     
@@ -189,8 +189,8 @@ def hill_climbing_steps(gui:ChessBoardGUI, logic:ChessBoardLogic):
             scheduler.add_task(show_random, 1000, gui, xr, yr)
             scheduler.add_task(move_queen, 1000, gui, xr, yr, y_old)
             
-            collisions = deepcopy(logic.board_colisions_calculator())
-            heuristics = deepcopy(logic.board_heuristics_calculator())
+            collisions = logic.board_colisions_calculator()
+            heuristics = logic.board_heuristics_calculator()
             queen_positions = deepcopy(logic.queen_positions)
             previous_heuristics = logic.current_heuristics
             
@@ -204,8 +204,8 @@ def hill_climbing_steps(gui:ChessBoardGUI, logic:ChessBoardLogic):
             logic.move_queen(x_min, y_min)
             print(x_min, y_min, y_old)
             scheduler.add_task(move_queen, 1000, gui, x_min, y_min, y_old)
-            collisions = deepcopy(logic.board_colisions_calculator())
-            heuristics = deepcopy(logic.board_heuristics_calculator())
+            collisions = logic.board_colisions_calculator()
+            heuristics = logic.board_heuristics_calculator()
             queen_positions = deepcopy(logic.queen_positions)
             previous_heuristics = logic.current_heuristics
             
