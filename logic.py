@@ -2,7 +2,7 @@ from random import randint, choice
 from time import time
 import matplotlib.pyplot as plt
 import numpy as np
-
+from copy import deepcopy
 
 class ChessBoardLogic():
     def __init__(self, board_size=8): 
@@ -90,7 +90,7 @@ class ChessBoardLogic():
             for j in range(self.board_size):
                 self.collisions[i][j] = self.square_collisions_calculator(j, i) # x, y
         
-        return self.collisions
+        return deepcopy(self.collisions)
     
     def board_heuristics_calculator(self):
         original_colisions = [] # pocetno stanje kraljica
@@ -111,7 +111,7 @@ class ChessBoardLogic():
                 else:
                     self.heuristics[j][i] = heur//2 - original_colisions[i] + self.collisions[j][i]
 
-        return self.heuristics
+        return deepcopy(self.heuristics)
     
     def get_min_heuristics(self):
         matrix = np.array(self.heuristics)
